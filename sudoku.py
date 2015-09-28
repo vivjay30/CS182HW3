@@ -520,8 +520,10 @@ print 'Solution: ' + str(solveLocal(start))
             setup = setup, number = 1))
 
 def doc(fn):
-    print fn
-    print fn.__doc__
+    import pydoc
+    import IPython.display
+    return IPython.display.HTML(pydoc.html.docroutine(fn))
+    # print pydoc.render_doc(fn, "Help on %s")
     
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
