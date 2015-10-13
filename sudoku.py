@@ -12,6 +12,7 @@ def crossOff(values, nums):
     """
     Removes seen nums from domain values.
     Also counts the possible constraint violations.
+    ARGS: values is always [1...9], nums is the numbers in the row/col/box
     """
     violations = 0
     for n in nums:
@@ -81,21 +82,50 @@ class Sudoku:
         Returns the first variable with assignment epsilon
         i.e. first square in the board that is unassigned.
         """
-        raise NotImplementedError()
+        # Just look for the first zero variable, or return -1
+        for row in range(9):
+            for column in range(9):
+                if self.board[row][column] == 0:
+                    return (row, column)
+
+        return -1
 
     def complete(self):
         """
         IMPLEMENT FOR PART 1
         Returns true if the assignment is complete. 
         """
-        raise NotImplementedError()
+        if self.firstEpsilonVariable() == -1:
+            return True
+        else:
+            return False
 
     def variableDomain(self, r, c):
         """
         IMPLEMENT FOR PART 1
         Returns current domain for the (row, col) variable .
         """
-        raise NotImplementedError()
+        domain = set([1,2,3,4,5,6,7,8,9])
+        # Remove conflicts in the row
+        for num in self.row(r):
+            try:
+                domain.remove(num)
+            except:
+                pass
+        # Remove conflicts in the column
+        for num in self.col(c):
+            try:
+                domain.remove(num)
+            except:
+                pass
+        # Remove conflicts in the box
+        for num in self.box(self.box_id(r,c)):
+            try:
+                domain.remove(num)
+            except:
+                pass
+
+        return list(domain)
 
     # PART 2
     def updateFactor(self, factor_type, i):
@@ -105,13 +135,20 @@ class Sudoku:
         `factor_type` is one of BOX, ROW, COL 
         `i` is an index between 0 and 8.
         """
-        raise NotImplementedError()
-        # values = []
-        # if factor_type == BOX:
+        # Values contains [0..9]
+        values = range(1,10)
+
+        # CrossOff actually changes values, assign conflicts as the return
+        if factor_type == BOX:
+            self.factorNumConflicts[BOX, i] = crossOff(values, self.box(i))
             
-        # if factor_type == ROW:
-            
-        # if factor_type == COL:
+        if factor_type == ROW:
+            self.factorNumConflicts[ROW, i] = crossOff(values, self.row(i))
+
+        if factor_type == COL:
+            self.factorNumConflicts[COL, i] = crossOff(values, self.row(i))
+        # Assign factor remaining as the updates values list
+        self.factorRemaining[factor_type, i] = values
             
         
     def updateAllFactors(self):
@@ -120,14 +157,19 @@ class Sudoku:
         Update the values remaining for all factors.
         There is one factor for each row, column, and box.
         """
-        raise NotImplementedError()
+        for factor_type in [BOX, ROW, COL]:
+            for i in range(9):
+                self.updateFactor(factor_type, i)
 
     def updateVariableFactors(self, variable):
         """
         IMPLEMENT FOR PART 2
         Update all the factors impacting a variable (neighbors in factor graph).
         """
-        raise NotImplementedError()
+        # Call updateFactor on the Row, Col, Box of the variable
+        self.updateFactor(ROW, variable[0])
+        self.updateFactor(COL, variable[1])
+        self.updateFactor(BOX, self.box_id(variable[0], variable[1]))
 
     # CSP SEARCH CODE
     def nextVariable(self):
@@ -145,8 +187,19 @@ class Sudoku:
         IMPLEMENT IN PART 3
         Returns new assignments with each possible value 
         assigned to the variable returned by `nextVariable`.
+        RET: A list of new Sudoku objects that are created by changing an epsilon var
         """
-        raise NotImplementedError()
+        ret = []
+        # Get the first unassigned variable
+        nextVar = self.nextVariable()
+        # For all acceptable values in the domain of the variable
+        for value in self.variableDomain(nextVar[0], nextVar[1]):
+            newBoard = self.setVariable(nextVar[0], nextVar[1], value)
+            newBoard.updateVariableFactors(nextVar)
+            # Append to the list of all possible next boards
+            ret.append(newBoard)
+        return ret
+
 
     def getAllSuccessors(self):
         if not args.forward: 
@@ -163,7 +216,12 @@ class Sudoku:
         IMPLEMENT IN PART 4
         Returns true if all variables have non-empty domains.
         """
-        raise NotImplementedError()
+        # Check if there is a variable with an empty domain
+        for row in range(9):
+            for col in range(9):
+                if (not self.board[row][col]) and (not self.variableDomain(row, col)):
+                    return False
+        return True
 
     # PART 5
     def mostConstrainedVariable(self):
@@ -171,7 +229,19 @@ class Sudoku:
         IMPLEMENT IN PART 5
         Returns the most constrained unassigned variable.
         """
-        raise NotImplementedError()
+        smallestConstr = None
+        currVar = None
+        # Iterate over all variables
+        for row in range(9):
+            for col in range(9):
+                # Make sure the variable is unassigned
+                if not self.board[row][col]:
+                    # Get the number of constrants
+                    constr = len(self.variableDomain(row, col))
+                    if smallestConstr is None or constr < smallestConstr:
+                        currVar = (row, col)
+                        smallestConstr = constr
+        return currVar
 
     # LOCAL SEARCH CODE
     # Fixed variables cannot be changed by the player.
@@ -504,7 +574,6 @@ def main(arguments):
                    isFirstLocal=args.localsearch)
 
     print args
-
     setup = '''
 from __main__ import start, solveLocal, solveCSP
 '''
