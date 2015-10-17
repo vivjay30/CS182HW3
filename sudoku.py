@@ -135,7 +135,7 @@ class Sudoku:
         `factor_type` is one of BOX, ROW, COL 
         `i` is an index between 0 and 8.
         """
-        # Values contains [0..9]
+        # Values contains [1..9]
         values = range(1,10)
 
         # CrossOff actually changes values, assign conflicts as the return
@@ -187,7 +187,8 @@ class Sudoku:
         IMPLEMENT IN PART 3
         Returns new assignments with each possible value 
         assigned to the variable returned by `nextVariable`.
-        RET: A list of new Sudoku objects that are created by changing an epsilon var
+        RET: A list of new Sudoku objects that are created by
+        changing an epsilon var
         """
         ret = []
         # Get the first unassigned variable
@@ -276,6 +277,7 @@ class Sudoku:
     def numConflicts(self):
         "Returns the total number of conflicts"
         return sum(self.factorNumConflicts.values())
+
         
     # PART 6
     def randomRestart(self):
@@ -285,8 +287,20 @@ class Sudoku:
         with all the row factors being held consistent. 
         Should call `updateAllFactors` at end.
         """
-        raise NotImplementedError()
-        # self.updateAllFactors()
+        
+        # for all rows, check if there is a fixed variable
+        # in the (row, col) and if not, put one of the
+        # remaining factors randomly
+        for r in range(9):
+            ls = [i for i in self.factorRemaining[ROW, r] if i is not None]
+            for c in range(9):
+                if (r,c) not in self.fixedVariables:
+                    if (len(ls) > 0):
+                        elem = random.choice(ls)
+                        ls.remove(elem)
+                        self.board[r][c] = elem
+
+        self.updateAllFactors()
     
     # PART 7
     def randomSwap(self):
@@ -295,7 +309,25 @@ class Sudoku:
         Returns two random variables that can be swapped without
         causing a row factor conflict.
         """
-        raise NotImplementedError()
+        # select a random row
+        r = random.randint(0,8)
+
+        # select two random different elements of the row
+        value1 = random.randint(0,8)
+        value2 = random.randint(0,8)
+
+        # make sure these aren't fixed variables
+        while (r, value1) not in self.fixedVariables:
+            value1 = random.randint(0,8)
+        # make sure these values are different
+        while (r, value2) not in self.fixedVariables or value1 == value2:
+            value2 = random.randint(0,8)
+
+        # return the two variables
+        var1 = (r, value1)
+        var2 = (r, value2)
+        return (var1, var2)
+    
       
 
     # PART 8
@@ -304,8 +336,36 @@ class Sudoku:
         IMPLEMENT FOR PART 8
         Decide if we should swap the values of variable1 and variable2.
         """
-        raise NotImplementedError()
+        # make a new state
+        newBoard = deepcopy(self.board)
+        state = Sudoku(newBoard)
 
+        for i in range (100000):
+            # store the old constraint violations
+            oldNumConflict = self.numConflicts()
+
+            # modify the row variables in state
+            if variable1 not in self.fixedVariables and variable2 not in self.fixedVariables:
+                state.modifySwap(variable1, variable2)
+
+            # store the new constraint violations
+            newNumConflict = state.numConflicts()
+
+            # if new violations greater than or
+            # equal to the old violations,
+            # change the self's board to the state's
+            if (newNumConflict >= oldNumConflict):
+                self.board = state.board
+                self.updateVariableFactors(variable1)
+                self.updateVariableFactors(variable2)
+                self.updateAllFactors()
+            else:
+                if random.random() <= 0.001:
+                    self.board = state.board
+                    self.updateVariableFactors(variable1)
+                    self.updateVariableFactors(variable2)
+                    self.updateAllFactors()
+                   
         
     ### IGNORE - PRINTING CODE
         
@@ -509,7 +569,6 @@ def solveLocal(problem):
                 display.display(display.HTML(state.prettyprinthtml()))
                 display.clear_output(True)
                 sleep(0.5)
-
                 
                 
             if state.numConflicts() == 0:
@@ -596,6 +655,25 @@ def doc(fn):
     
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
+    '''boardEasy =  [[0,2,0,1,7,8,0,3,0],
+              [0,4,0,3,0,2,0,9,0],
+              [1,0,0,0,0,0,0,0,6],
+              [0,0,8,6,0,3,5,0,0],
+              [3,0,0,0,0,0,0,0,4],
+              [0,0,6,7,0,9,2,0,0],
+              [9,0,0,0,0,0,0,0,2],
+              [0,8,0,9,0,1,0,6,0],
+              [0,1,0,4,3,6,0,5,0]]
+    sudoku = Sudoku(boardEasy, [], True)
+    print sudoku.board
+    sudoku.randomRestart()
+    print ""
+    print sudoku.board
+    var1, var2 = sudoku.randomSwap()
+    print "var1 is " , var1
+    print "var2 is " , var2
+
+    sudoku.gradientDescent(var1, var2)'''
 
 
 
