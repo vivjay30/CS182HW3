@@ -4,6 +4,14 @@ import sys, os
 import random 
 import argparse
 
+
+##################################
+#                                #
+#   Partners: Saroj Kandel       #
+#             Vivek Jayaram      #
+#                                #
+##################################
+
 BOX = 1
 ROW = 2
 COL = 3
