@@ -293,6 +293,7 @@ class Sudoku:
         # remaining factors randomly
         for r in range(9):
             ls = [i for i in self.factorRemaining[ROW, r] if i is not None]
+                    
             for c in range(9):
                 if (r,c) not in self.fixedVariables:
                     if (len(ls) > 0):
@@ -327,9 +328,7 @@ class Sudoku:
         # return the two variables
         var1 = (r, value1)
         var2 = (r, value2)
-        return (var1, var2)
-    
-      
+        return (var1, var2)      
 
     # PART 8
     def gradientDescent(self, variable1, variable2):
@@ -338,32 +337,29 @@ class Sudoku:
         Decide if we should swap the values of variable1 and variable2.
         """
         # make a new state
-        newBoard = deepcopy(self.board)
-        state = Sudoku(newBoard)
+        oldBoard = deepcopy(self.board)
+        #state = Sudoku(newBoard)
         
         # store the old constraint violations
         oldNumConflict = self.numConflicts()
 
-        if variable1 not in self.fixedVariables and variable2 not in self.fixedVariables:
+        #if variable1 not in self.fixedVariables and variable2 not in self.fixedVariables:
         # modify the row variables in state
-            state.modifySwap(variable1, variable2)
+        self.modifySwap(variable1, variable2)
 
         # store the new constraint violations
-        newNumConflict = state.numConflicts()
-
-        #print "old Conflict is " , oldNumConflict
-        #print "new conflict is ", newNumConflict
+        newNumConflict = self.numConflicts()
 
         # if new violations greater than or
         # equal to the old violations,
         # change the self's board to the state's
-        if (newNumConflict >= oldNumConflict):
-            self.board = deepcopy(state.board)
+        if (newNumConflict <= oldNumConflict):
+            pass
         else:
-            '''if random.random() <= 0.001:
-                self.board = deepcopy(state.board)
-            else:'''
-            state.board = self.board
+            if random.random() <= 0.001:
+                pass
+            else:
+                self.modifySwap(variable1, variable2)
                    
         
     ### IGNORE - PRINTING CODE
@@ -654,24 +650,6 @@ def doc(fn):
     
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
-    '''boardEasy =  [[0,2,0,1,7,8,0,3,0],
-              [0,4,0,3,0,2,0,9,0],
-              [1,0,0,0,0,0,0,0,6],
-              [0,0,8,6,0,3,5,0,0],
-              [3,0,0,0,0,0,0,0,4],
-              [0,0,6,7,0,9,2,0,0],
-              [9,0,0,0,0,0,0,0,2],
-              [0,8,0,9,0,1,0,6,0],
-              [0,1,0,4,3,6,0,5,0]]
-    sudoku = Sudoku(boardEasy, [], True)
-    #print sudoku.board
-    sudoku.randomRestart()
-    #print ""
-    var1, var2 = sudoku.randomSwap()
-
-
-    sudoku.gradientDescent(var1, var2)'''
-    
 
 
 
