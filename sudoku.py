@@ -356,15 +356,9 @@ class Sudoku:
             # change the self's board to the state's
             if (newNumConflict >= oldNumConflict):
                 self.board = state.board
-                self.updateVariableFactors(variable1)
-                self.updateVariableFactors(variable2)
-                self.updateAllFactors()
             else:
                 if random.random() <= 0.001:
                     self.board = state.board
-                    self.updateVariableFactors(variable1)
-                    self.updateVariableFactors(variable2)
-                    self.updateAllFactors()
                    
         
     ### IGNORE - PRINTING CODE
@@ -655,25 +649,6 @@ def doc(fn):
     
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
-    '''boardEasy =  [[0,2,0,1,7,8,0,3,0],
-              [0,4,0,3,0,2,0,9,0],
-              [1,0,0,0,0,0,0,0,6],
-              [0,0,8,6,0,3,5,0,0],
-              [3,0,0,0,0,0,0,0,4],
-              [0,0,6,7,0,9,2,0,0],
-              [9,0,0,0,0,0,0,0,2],
-              [0,8,0,9,0,1,0,6,0],
-              [0,1,0,4,3,6,0,5,0]]
-    sudoku = Sudoku(boardEasy, [], True)
-    print sudoku.board
-    sudoku.randomRestart()
-    print ""
-    print sudoku.board
-    var1, var2 = sudoku.randomSwap()
-    print "var1 is " , var1
-    print "var2 is " , var2
-
-    sudoku.gradientDescent(var1, var2)'''
 
 
 
