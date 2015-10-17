@@ -7,8 +7,8 @@ import argparse
 
 ##################################
 #                                #
-#   Partners: Saroj Kandel       #
-#             Vivek Jayaram      #
+#   Partners: Vivek Jayaram      #
+#             Saroj Kandel       #
 #                                #
 ##################################
 
